@@ -14,6 +14,10 @@ struct ProspectsView: View {
     @Query(sort: \Prospect.name) var prospects: [Prospect]
     @State private var isShowingScanner = false
     @State private var selectedProspects = Set<Prospect>()
+    @State private var editing = false
+    @State private var isShowingEdit = false
+    @State private var prospectToEdit: Prospect?
+    
     enum FilterType {
         case none, contacted, uncontacted
     }
@@ -34,7 +38,8 @@ struct ProspectsView: View {
     var body: some View {
         NavigationStack {
             List(prospects, selection: $selectedProspects) { prospect in
-                HStack{
+             //   NavigationLink(destination: EditProspect(prospect: prospect)) {
+                HStack {
                     if filter == .none {
                         Circle()
                             .frame(width: 10, height: 10)
@@ -49,30 +54,40 @@ struct ProspectsView: View {
                             .foregroundStyle(.secondary)
                         
                     }
-                    .swipeActions {
-                        
-                        Button("Delete", systemImage: "trash", role: .destructive) {
-                            modelContext.delete(prospect)
-                        }
-                        if prospect.isContacted {
-                            Button("Mark Uncontacted", systemImage: "person.crop.circle.badge.xmark") {
-                                prospect.isContacted.toggle()
-                            }
-                            .tint(.blue)
-                        } else {
-                            Button("Mark Contacted", systemImage: "person.crop.circle.fill.badge.checkmark") {
-                                prospect.isContacted.toggle()
-                            }
-                            .tint(.green)
-                            
-                            Button("Remind Me", systemImage: "bell") {
-                                addNotification(for: prospect)
-                            }
-                            .tint(.orange)
-                        }
-                    }
-                    .tag(prospect)
                 }
+                .sheet(isPresented: $isShowingEdit) {
+                    EditProspect(prospect: prospect)
+                }
+            //}
+                .swipeActions(edge: .leading, allowsFullSwipe: true) {
+                    Button("Edit", systemImage: "pencil") {
+                        isShowingEdit = true
+                    }
+                }
+                .swipeActions {
+                    Button("Delete", systemImage: "trash", role: .destructive) {
+                        modelContext.delete(prospect)
+                    }
+                    if prospect.isContacted {
+                        Button("Mark Uncontacted", systemImage: "person.crop.circle.badge.xmark") {
+                            prospect.isContacted.toggle()
+                        }
+                        .tint(.blue)
+                    } else {
+                        Button("Mark Contacted", systemImage: "person.crop.circle.fill.badge.checkmark") {
+                            prospect.isContacted.toggle()
+                        }
+                        .tint(.green)
+                        
+                        Button("Remind Me", systemImage: "bell") {
+                            addNotification(for: prospect)
+                        }
+                        .tint(.orange)
+                    }
+                }
+                .tag(prospect)
+                
+                
             }
             .navigationTitle(title)
             .toolbar {
@@ -99,6 +114,7 @@ struct ProspectsView: View {
             }
             
         }
+        
     }
     
     init(filter: FilterType) {
@@ -137,21 +153,21 @@ struct ProspectsView: View {
     
     func addNotification(for prospect: Prospect) {
         let center = UNUserNotificationCenter.current()
-
+        
         let addRequest = {
             let content = UNMutableNotificationContent()
             content.title = "Contact \(prospect.name)"
             content.subtitle = prospect.email
             content.sound = UNNotificationSound.default
-
+            
             var dateComponents = DateComponents()
             dateComponents.hour = 9
             let trigger = UNCalendarNotificationTrigger(dateMatching: dateComponents, repeats: false)
-
+            
             let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: trigger)
             center.add(request)
         }
-
+        
         center.getNotificationSettings { settings in
             if settings.authorizationStatus == .authorized {
                 addRequest()

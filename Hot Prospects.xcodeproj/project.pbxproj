@@ -16,6 +16,7 @@
 		0702AB4E2C49691400D71DC0 /* MeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0702AB4D2C49691400D71DC0 /* MeView.swift */; };
 		0702AB502C496AD400D71DC0 /* Prospect.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0702AB4F2C496AD400D71DC0 /* Prospect.swift */; };
 		0702AB532C4971CA00D71DC0 /* CodeScanner in Frameworks */ = {isa = PBXBuildFile; productRef = 0702AB522C4971CA00D71DC0 /* CodeScanner */; };
+		0702AB552C497F5F00D71DC0 /* EditProspect.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0702AB542C497F5F00D71DC0 /* EditProspect.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -27,6 +28,7 @@
 		0702AB4B2C49690B00D71DC0 /* ProspectsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProspectsView.swift; sourceTree = "<group>"; };
 		0702AB4D2C49691400D71DC0 /* MeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeView.swift; sourceTree = "<group>"; };
 		0702AB4F2C496AD400D71DC0 /* Prospect.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Prospect.swift; sourceTree = "<group>"; };
+		0702AB542C497F5F00D71DC0 /* EditProspect.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditProspect.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -64,6 +66,7 @@
 				0702AB3A2C4957A800D71DC0 /* Hot_ProspectsApp.swift */,
 				0702AB3C2C4957A800D71DC0 /* ContentView.swift */,
 				0702AB4F2C496AD400D71DC0 /* Prospect.swift */,
+				0702AB542C497F5F00D71DC0 /* EditProspect.swift */,
 				0702AB4B2C49690B00D71DC0 /* ProspectsView.swift */,
 				0702AB4D2C49691400D71DC0 /* MeView.swift */,
 				0702AB3E2C4957AA00D71DC0 /* Assets.xcassets */,
@@ -163,6 +166,7 @@
 				0702AB4C2C49690B00D71DC0 /* ProspectsView.swift in Sources */,
 				0702AB3D2C4957A800D71DC0 /* ContentView.swift in Sources */,
 				0702AB3B2C4957A800D71DC0 /* Hot_ProspectsApp.swift in Sources */,
+				0702AB552C497F5F00D71DC0 /* EditProspect.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
