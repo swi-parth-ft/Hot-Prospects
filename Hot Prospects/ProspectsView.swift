@@ -11,10 +11,8 @@ import CodeScanner
 struct ProspectsView: View {
     @Environment(\.modelContext) var modelContext
     @Query(sort: \Prospect.name) var prospects: [Prospect]
-    
-    
     @State private var isShowingScanner = false
-    
+    @State private var selectedProspects = Set<Prospect>()
     enum FilterType {
         case none, contacted, uncontacted
     }
@@ -34,7 +32,7 @@ struct ProspectsView: View {
     
     var body: some View {
         NavigationStack {
-            List(prospects) { prospect in
+            List(prospects, selection: $selectedProspects) { prospect in
                 VStack(alignment: .leading) {
                     Text(prospect.name)
                         .font(.headline)
@@ -42,16 +40,48 @@ struct ProspectsView: View {
                     Text(prospect.email)
                         .foregroundStyle(.secondary)
                 }
+                .swipeActions {
+                    
+                    Button("Delete", systemImage: "trash", role: .destructive) {
+                        modelContext.delete(prospect)
+                    }
+                    if prospect.isContacted {
+                        Button("Mark Uncontacted", systemImage: "person.crop.circle.badge.xmark") {
+                            prospect.isContacted.toggle()
+                        }
+                        .tint(.blue)
+                    } else {
+                        Button("Mark Contacted", systemImage: "person.crop.circle.fill.badge.checkmark") {
+                            prospect.isContacted.toggle()
+                        }
+                        .tint(.green)
+                    }
+                }
+                .tag(prospect)
             }
-                .navigationTitle(title)
-                .toolbar {
+            .navigationTitle(title)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
                     Button("Scan", systemImage: "qrcode.viewfinder") {
                         isShowingScanner = true
                     }
                 }
-                .sheet(isPresented: $isShowingScanner) {
-                    CodeScannerView(codeTypes: [.qr], simulatedData: "Parth Antala\nParth@icloud.com", completion: handleScan)
+                
+                ToolbarItem(placement: .topBarLeading) {
+                    EditButton()
                 }
+                
+                if selectedProspects.isEmpty == false {
+                    ToolbarItem(placement: .bottomBar) {
+                        Button("delete Selected") {
+                            delete()
+                        }
+                    }
+                }
+            }
+            .sheet(isPresented: $isShowingScanner) {
+                CodeScannerView(codeTypes: [.qr], simulatedData: "Parth Antala\nParth@icloud.com", completion: handleScan)
+            }
             
         }
     }
@@ -81,6 +111,13 @@ struct ProspectsView: View {
         case .failure(let error):
             print(error.localizedDescription)
         }
+    }
+    
+    func delete() {
+        for prospect in prospects {
+            modelContext.delete(prospect)
+        }
+        
     }
 }
 
