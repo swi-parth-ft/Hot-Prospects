@@ -11,12 +11,20 @@ import UserNotifications
 
 struct ProspectsView: View {
     @Environment(\.modelContext) var modelContext
+    @Environment(\.dismiss) var dismiss
+    
     @Query(sort: \Prospect.name) var prospects: [Prospect]
     @State private var isShowingScanner = false
     @State private var selectedProspects = Set<Prospect>()
     @State private var editing = false
     @State private var isShowingEdit = false
     @State private var prospectToEdit: Prospect?
+    @State private var selectedHour = 9
+    
+    @State private var showingDatePicker = false
+    @State private var selectedProspect: Prospect?
+    @State private var reminderDate = Date()
+    @State private var showComfirmation = false
     
     enum FilterType {
         case none, contacted, uncontacted
@@ -38,7 +46,6 @@ struct ProspectsView: View {
     var body: some View {
         NavigationStack {
             List(prospects, selection: $selectedProspects) { prospect in
-             //   NavigationLink(destination: EditProspect(prospect: prospect)) {
                 HStack {
                     if filter == .none {
                         Circle()
@@ -46,6 +53,7 @@ struct ProspectsView: View {
                             .foregroundColor(prospect.isContacted ? .green : .red)
                             .padding(.trailing)
                     }
+                    
                     VStack(alignment: .leading) {
                         Text(prospect.name)
                             .font(.headline)
@@ -58,11 +66,19 @@ struct ProspectsView: View {
                 .sheet(isPresented: $isShowingEdit) {
                     EditProspect(prospect: prospect)
                 }
-            //}
+                
                 .swipeActions(edge: .leading, allowsFullSwipe: true) {
                     Button("Edit", systemImage: "pencil") {
                         isShowingEdit = true
                     }
+                    .tint(.blue)
+                    
+                    Picker("Alert hour", selection: $selectedHour) {
+                        ForEach(0..<24) { number in
+                            Text("\(number)")
+                        }
+                    }
+                    .pickerStyle(.menu)
                 }
                 .swipeActions {
                     Button("Delete", systemImage: "trash", role: .destructive) {
@@ -80,7 +96,10 @@ struct ProspectsView: View {
                         .tint(.green)
                         
                         Button("Remind Me", systemImage: "bell") {
-                            addNotification(for: prospect)
+                            selectedProspect = prospect
+                            showingDatePicker = true
+                            
+                            //        addNotification(for: prospect)
                         }
                         .tint(.orange)
                     }
@@ -111,6 +130,34 @@ struct ProspectsView: View {
             }
             .sheet(isPresented: $isShowingScanner) {
                 CodeScannerView(codeTypes: [.qr], simulatedData: "Parth Antala\nParth@icloud.com", completion: handleScan)
+            }
+            .sheet(isPresented: $showingDatePicker) {
+                DatePickerView(date: $reminderDate) {
+                    // Handle the reminder logic here
+                    if let prospect = selectedProspect {
+                        let calendar = Calendar.current
+                        let hour = calendar.component(.hour, from: reminderDate)
+                        let minute = calendar.component(.minute, from: reminderDate)
+                        addNotification(for: prospect, at: hour, minute: minute)
+                        showComfirmation = true
+                        dismiss()
+                    }
+                        
+                }
+                .presentationDetents([.fraction(0.4), .medium, .large])
+            }
+            .alert("Reminder Set",isPresented: $showComfirmation) {
+                Button("OK", role: .cancel) { }
+            } message: {
+                let calendar = Calendar.current
+                let hour = calendar.component(.hour, from: reminderDate)
+                let minute = calendar.component(.minute, from: reminderDate)
+                
+                if let prospect = selectedProspect {
+                    let name = prospect.name
+                    Text("Your reminder to contact \(name) has been set at \(hour):\(minute)")
+                }
+                
             }
             
         }
@@ -151,7 +198,7 @@ struct ProspectsView: View {
         
     }
     
-    func addNotification(for prospect: Prospect) {
+    func addNotification(for prospect: Prospect, at hour: Int, minute: Int) {
         let center = UNUserNotificationCenter.current()
         
         let addRequest = {
@@ -161,7 +208,8 @@ struct ProspectsView: View {
             content.sound = UNNotificationSound.default
             
             var dateComponents = DateComponents()
-            dateComponents.hour = 9
+            dateComponents.hour = hour
+            dateComponents.minute = minute
             let trigger = UNCalendarNotificationTrigger(dateMatching: dateComponents, repeats: false)
             
             let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: trigger)
@@ -183,6 +231,27 @@ struct ProspectsView: View {
         }
     }
 }
+
+
+struct DatePickerView: View {
+    @Binding var date: Date
+    var onSave: () -> Void
+    
+    var body: some View {
+        VStack {
+            DatePicker("Select time", selection: $date, displayedComponents: .hourAndMinute)
+                .datePickerStyle(WheelDatePickerStyle())
+                .labelsHidden()
+            
+            Button("Save") {
+                onSave()
+            }
+            .padding()
+        }
+        .padding()
+    }
+}
+
 
 #Preview {
     ProspectsView(filter: .none)
