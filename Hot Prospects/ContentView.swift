@@ -33,6 +33,8 @@ struct ContentView: View {
                     Label("Me", systemImage: "person.crop.square")
                 }
         }
+        .tint(.orange)
+        
          
     }
     

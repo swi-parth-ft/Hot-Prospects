@@ -42,124 +42,144 @@ struct ProspectsView: View {
             "Uncontacted people"
         }
     }
+
+       
+    
     
     var body: some View {
         NavigationStack {
-            List(prospects, selection: $selectedProspects) { prospect in
-                HStack {
-                    if filter == .none {
-                        Circle()
-                            .frame(width: 10, height: 10)
-                            .foregroundColor(prospect.isContacted ? .green : .red)
-                            .padding(.trailing)
-                    }
-                    
-                    VStack(alignment: .leading) {
-                        Text(prospect.name)
-                            .font(.headline)
+            VStack {
+                List(prospects, selection: $selectedProspects) { prospect in
+                    HStack {
+                        if filter == .none {
+                            Circle()
+                                .frame(width: 10, height: 10)
+                                .foregroundColor(prospect.isContacted ? .green : .red)
+                                .padding(.trailing)
+                        }
                         
-                        Text(prospect.email)
-                            .foregroundStyle(.secondary)
-                        
-                    }
-                }
-                .sheet(isPresented: $isShowingEdit) {
-                    EditProspect(prospect: prospect)
-                }
-                
-                .swipeActions(edge: .leading, allowsFullSwipe: true) {
-                    Button("Edit", systemImage: "pencil") {
-                        isShowingEdit = true
-                    }
-                    .tint(.blue)
-                    
-                    Picker("Alert hour", selection: $selectedHour) {
-                        ForEach(0..<24) { number in
-                            Text("\(number)")
+                        VStack(alignment: .leading) {
+                            Text(prospect.name)
+                                .font(.headline)
+                            
+                            Text(prospect.email)
+                                .foregroundStyle(.secondary)
+                            
                         }
                     }
-                    .pickerStyle(.menu)
-                }
-                .swipeActions {
-                    Button("Delete", systemImage: "trash", role: .destructive) {
-                        modelContext.delete(prospect)
+                    .listRowBackground(Color.white.opacity(0.5))
+                    .sheet(isPresented: $isShowingEdit) {
+                        EditProspect(prospect: prospect)
+                            .presentationDetents([.fraction(0.4), .medium, .large])
                     }
-                    if prospect.isContacted {
-                        Button("Mark Uncontacted", systemImage: "person.crop.circle.badge.xmark") {
-                            prospect.isContacted.toggle()
+                    
+                    .swipeActions(edge: .leading, allowsFullSwipe: true) {
+                        Button("Edit", systemImage: "pencil") {
+                            isShowingEdit = true
                         }
                         .tint(.blue)
-                    } else {
-                        Button("Mark Contacted", systemImage: "person.crop.circle.fill.badge.checkmark") {
-                            prospect.isContacted.toggle()
-                        }
-                        .tint(.green)
                         
-                        Button("Remind Me", systemImage: "bell") {
-                            selectedProspect = prospect
-                            showingDatePicker = true
+                        Picker("Alert hour", selection: $selectedHour) {
+                            ForEach(0..<24) { number in
+                                Text("\(number)")
+                            }
+                        }
+                        .pickerStyle(.menu)
+                    }
+                    .swipeActions {
+                        Button("Delete", systemImage: "trash", role: .destructive) {
+                            modelContext.delete(prospect)
+                        }
+                        if prospect.isContacted {
+                            Button("Mark Uncontacted", systemImage: "person.crop.circle.badge.xmark") {
+                                prospect.isContacted.toggle()
+                            }
+                            .tint(.blue)
+                        } else {
+                            Button("Mark Contacted", systemImage: "person.crop.circle.fill.badge.checkmark") {
+                                prospect.isContacted.toggle()
+                            }
+                            .tint(.green)
                             
-                            //        addNotification(for: prospect)
-                        }
-                        .tint(.orange)
-                    }
-                }
-                .tag(prospect)
-                
-                
-            }
-            .navigationTitle(title)
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button("Scan", systemImage: "qrcode.viewfinder") {
-                        isShowingScanner = true
-                    }
-                }
-                
-                ToolbarItem(placement: .topBarLeading) {
-                    EditButton()
-                }
-                
-                if selectedProspects.isEmpty == false {
-                    ToolbarItem(placement: .bottomBar) {
-                        Button("delete Selected") {
-                            delete()
+                            Button("Remind Me", systemImage: "bell") {
+                                selectedProspect = prospect
+                                showingDatePicker = true
+                                
+                                //        addNotification(for: prospect)
+                            }
+                            .tint(.orange)
                         }
                     }
+                    .tag(prospect)
+                    
+                    
                 }
-            }
-            .sheet(isPresented: $isShowingScanner) {
-                CodeScannerView(codeTypes: [.qr], simulatedData: "Parth Antala\nParth@icloud.com", completion: handleScan)
-            }
-            .sheet(isPresented: $showingDatePicker) {
-                DatePickerView(date: $reminderDate) {
-                    // Handle the reminder logic here
-                    if let prospect = selectedProspect {
-                        let calendar = Calendar.current
-                        let hour = calendar.component(.hour, from: reminderDate)
-                        let minute = calendar.component(.minute, from: reminderDate)
-                        addNotification(for: prospect, at: hour, minute: minute)
-                        showComfirmation = true
-                        dismiss()
+                .scrollContentBackground(.hidden)
+                
+                .navigationTitle(title)
+                .toolbar {
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Button("Scan", systemImage: "qrcode.viewfinder") {
+                            isShowingScanner = true
+                        }
+                        .tint(.white)
                     }
+                    
+                    ToolbarItem(placement: .topBarLeading) {
+                        EditButton()
+                            .tint(.white)
+                    }
+                    
+                    if selectedProspects.isEmpty == false {
+                        ToolbarItem(placement: .bottomBar) {
+                            Button("delete Selected") {
+                                delete()
+                            }
+                            .tint(.white)
+                        }
+                    }
+                }
+                .sheet(isPresented: $isShowingScanner) {
+                    CodeScannerView(codeTypes: [.qr], simulatedData: "Parth Antala\nParth@icloud.com", completion: handleScan)
+                }
+                .sheet(isPresented: $showingDatePicker) {
+                    ZStack {
+                        LinearGradient(colors: [.orange, .white], startPoint: .top, endPoint: .bottom).ignoresSafeArea()
                         
+                        DatePickerView(date: $reminderDate) {
+                            // Handle the reminder logic here
+                            if let prospect = selectedProspect {
+                                let calendar = Calendar.current
+                                let hour = calendar.component(.hour, from: reminderDate)
+                                let minute = calendar.component(.minute, from: reminderDate)
+
+                                addNotification(for: prospect, at: hour, minute: minute)
+                                showComfirmation = true
+                                dismiss()
+                            }
+                            
+                        }
+                        .presentationDetents([.fraction(0.4), .medium, .large])
+                        .tint(.orange)
+                        
+                    }
                 }
-                .presentationDetents([.fraction(0.4), .medium, .large])
-            }
-            .alert("Reminder Set",isPresented: $showComfirmation) {
-                Button("OK", role: .cancel) { }
-            } message: {
-                let calendar = Calendar.current
-                let hour = calendar.component(.hour, from: reminderDate)
-                let minute = calendar.component(.minute, from: reminderDate)
-                
-                if let prospect = selectedProspect {
-                    let name = prospect.name
-                    Text("Your reminder to contact \(name) has been set at \(hour):\(minute)")
+                .alert("Reminder Set",isPresented: $showComfirmation) {
+                    Button("OK", role: .cancel) { }
+                } message: {
+                    let calendar = Calendar.current
+                    let hour = calendar.component(.hour, from: reminderDate)
+                    let minute = calendar.component(.minute, from: reminderDate)
+                    
+                    if let prospect = selectedProspect {
+                        let name = prospect.name
+                        Text("Your reminder to contact \(name) has been set at \(hour):\(minute)")
+                    }
+                    
                 }
                 
             }
-            
+            .background(LinearGradient(colors: [.orange, .white], startPoint: .top, endPoint: .bottom))
         }
         
     }
@@ -174,6 +194,7 @@ struct ProspectsView: View {
                 $0.isContacted == showContactedOnly
             }, sort: [SortDescriptor(\Prospect.name)])
         }
+        UINavigationBar.appearance().largeTitleTextAttributes = [.foregroundColor: UIColor.white]
     }
     
     func handleScan(result: Result<ScanResult, ScanError>) {
@@ -239,7 +260,7 @@ struct DatePickerView: View {
     
     var body: some View {
         VStack {
-            DatePicker("Select time", selection: $date, displayedComponents: .hourAndMinute)
+            DatePicker("Select time", selection: $date, displayedComponents: [.hourAndMinute])
                 .datePickerStyle(WheelDatePickerStyle())
                 .labelsHidden()
             

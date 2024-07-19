@@ -16,12 +16,13 @@ struct EditProspect: View {
     @State private var email: String = ""
     @State private var isContacted = false
     var body: some View {
+        VStack {
         Form {
-            TextField("Name", text: $name)
-            TextField("email", text: $email)
-//            Toggle(isOn: $isContacted){
-//                Text("Connected?")
-//            }
+            Section("Update \(prospect.name)") {
+                TextField("Name", text: $name)
+                TextField("email", text: $email)
+            }
+            .listRowBackground(Color.white.opacity(0.5))
             Button("Save") {
                 prospect.name = name
                 prospect.email = email
@@ -32,12 +33,17 @@ struct EditProspect: View {
                 modelContext.insert(newPerson)
                 dismiss()
             }
+            .listRowBackground(Color.white.opacity(0.5))
+            .tint(.orange)
         }
+        .scrollContentBackground(.hidden)
         .onAppear {
             name = prospect.name
             email = prospect.email
-           
+            
         }
+    }
+        .background(LinearGradient(colors: [.orange, .white], startPoint: .top, endPoint: .bottom))
     }
 }
 
